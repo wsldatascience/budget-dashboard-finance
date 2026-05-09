@@ -1,0 +1,179 @@
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  /* ── Backgrounds ─────────────────────────────────────────────── */
+  --bg:       #060C1A;
+  --surface:  #0D1728;
+  --surface2: #0F1E35;
+  --surface3: #121E36;
+
+  /* ── Borders ─────────────────────────────────────────────────── */
+  --border:   rgba(80,120,200,0.14);
+  --border2:  rgba(80,120,200,0.08);
+
+  /* ── Text ────────────────────────────────────────────────────── */
+  --text:     #E4ECFA;
+  --text2:    #B8CADF;
+  --muted:    #546A8A;
+  --muted2:   #3D5270;
+
+  /* ── Brand ───────────────────────────────────────────────────── */
+  --navy:     #0B1628;
+  --green:    #0FD98A;
+  --red:      #FF4E5B;
+  --amber:    #FFBA35;
+  --teal:     #00C2D4;
+  --indigo:   #7C87F5;
+
+  /* ── Effects ─────────────────────────────────────────────────── */
+  --radius:   12px;
+  --shadow:   0 1px 4px rgba(0,0,0,.3), 0 4px 16px rgba(0,0,0,.25);
+  --shadow-md:0 8px 40px rgba(0,0,0,.5), 0 2px 8px rgba(0,0,0,.3);
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Outfit', 'Segoe UI', system-ui, sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+#root { min-height: 100vh; }
+
+/* ── Scrollbar ───────────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(80,120,200,0.2); border-radius: 4px; }
+
+/* ── Typography ──────────────────────────────────────────────────── */
+h2 {
+  font-size: .95rem;
+  font-weight: 600;
+  color: var(--text);
+  letter-spacing: -.01em;
+}
+
+/* ── Card ────────────────────────────────────────────────────────── */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px;
+  box-shadow: var(--shadow);
+  transition: box-shadow .18s, transform .18s;
+  animation: fadeUp .3s ease both;
+}
+.card:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-1px);
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.card-title {
+  font-size: .65rem;
+  font-weight: 700;
+  color: var(--muted2);
+  text-transform: uppercase;
+  letter-spacing: .09em;
+  margin-bottom: 8px;
+}
+
+.kpi-value {
+  font-size: 1.6rem;
+  font-weight: 700;
+  line-height: 1.1;
+  font-family: 'DM Mono', monospace;
+  font-variant-numeric: tabular-nums;
+}
+.kpi-sub   { font-size: .75rem; color: var(--muted); margin-top: 5px; }
+.kpi-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: .72rem;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 20px;
+  margin-top: 6px;
+  font-family: 'DM Mono', monospace;
+}
+.badge-up      { background: rgba(15,217,138,.12); color: var(--green); }
+.badge-down    { background: rgba(255,78,91,.12);  color: var(--red); }
+.badge-neutral { background: rgba(80,120,200,.10); color: var(--muted); }
+
+/* ── Grids ───────────────────────────────────────────────────────── */
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
+.grid-4 { display: grid; grid-template-columns: repeat(4,1fr); gap: 20px; }
+@media (max-width: 1200px) {
+  .grid-3, .grid-4 { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 720px) {
+  .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+}
+
+/* ── Tables ──────────────────────────────────────────────────────── */
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: .82rem; }
+thead th {
+  background: var(--surface2);
+  color: var(--muted2);
+  font-size: .64rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .09em;
+  padding: 11px 14px;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+tbody tr { border-bottom: 1px solid var(--border2); transition: background .1s; }
+tbody tr:last-child { border-bottom: none; }
+tbody tr:hover { background: var(--surface2); }
+td { padding: 10px 14px; color: var(--text2); }
+.td-num  { text-align: right; font-family: 'DM Mono', monospace; font-variant-numeric: tabular-nums; }
+.td-code { color: var(--muted2); font-family: 'DM Mono', monospace; font-size: .72rem; }
+
+/* ── Pills ───────────────────────────────────────────────────────── */
+.pill { display: inline-block; padding: 2px 9px; border-radius: 20px; font-size: .67rem; font-weight: 600; white-space: nowrap; }
+.pill-red   { background: rgba(255,78,91,.12);   color: var(--red); }
+.pill-green { background: rgba(15,217,138,.12);  color: var(--green); }
+.pill-amber { background: rgba(255,186,53,.12);  color: var(--amber); }
+.pill-blue  { background: rgba(124,135,245,.12); color: var(--indigo); }
+.pill-teal  { background: rgba(0,194,212,.12);   color: var(--teal); }
+
+/* ── Filter / input ──────────────────────────────────────────────── */
+.filter-bar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+select, input[type="text"], input:not([type]) {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: .82rem;
+  font-family: 'Outfit', sans-serif;
+  outline: none;
+  transition: border-color .15s, box-shadow .15s;
+}
+select:focus, input:focus {
+  border-color: var(--teal);
+  box-shadow: 0 0 0 3px rgba(0,194,212,.08);
+}
+
+/* ── Text helpers ────────────────────────────────────────────────── */
+.text-green { color: var(--green); }
+.text-red   { color: var(--red); }
+.text-muted { color: var(--muted); }
+
+/* ── Recharts ────────────────────────────────────────────────────── */
+.recharts-cartesian-axis-tick text { fill: var(--muted) !important; font-size: 11px; font-family: 'Outfit', sans-serif !important; }
+.recharts-tooltip-wrapper { outline: none; }
+.recharts-legend-item-text { color: var(--muted) !important; font-size: 12px; font-family: 'Outfit', sans-serif !important; }
+
+/* ── Button base ─────────────────────────────────────────────────── */
+button { font-family: 'Outfit', sans-serif; }

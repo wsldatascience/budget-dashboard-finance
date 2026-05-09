@@ -1,0 +1,34 @@
+# Secrets — never commit
+.env
+*.env
+
+# Financial data outputs — sensitive
+output/
+dashboard/public/dashboard_data.json
+dashboard/public/ml_data.json
+dashboard/public/narrative.json
+
+# Python
+__pycache__/
+*.py[cod]
+venv/
+.venv/
+*.egg-info/
+.pytest_cache/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Node
+dashboard/node_modules/
+dashboard/dist/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Claude Code internals
+.claude/
+
+# Source financial data
+data/

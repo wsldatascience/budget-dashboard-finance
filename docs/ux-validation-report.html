@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>UX Validation Report — FP&A Dashboard XPTO Campinas</title>
+<style>
+  :root {
+    --navy: #0f172a; --blue: #1e40af; --teal: #0d9488;
+    --green: #059669; --red: #dc2626; --amber: #d97706;
+    --text: #1e293b; --muted: #64748b; --border: #e2e8f0;
+    --surface: #f8fafc; --card: #ffffff;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--surface); color: var(--text); line-height: 1.6; }
+  .container { max-width: 960px; margin: 0 auto; padding: 40px 24px; }
+
+  /* Header */
+  .report-header { background: var(--navy); color: #fff; padding: 36px 40px; border-radius: 12px; margin-bottom: 32px; }
+  .report-header .label { font-size: .68rem; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: rgba(255,255,255,.45); margin-bottom: 6px; }
+  .report-header h1 { font-size: 1.8rem; font-weight: 800; margin-bottom: 4px; }
+  .report-header .meta { font-size: .82rem; color: rgba(255,255,255,.55); margin-top: 10px; }
+
+  /* Score box */
+  .score-box { display: flex; align-items: center; gap: 32px; background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 28px 32px; margin-bottom: 32px; }
+  .score-main { text-align: center; }
+  .score-number { font-size: 3.5rem; font-weight: 900; color: var(--amber); line-height: 1; }
+  .score-max { font-size: 1rem; color: var(--muted); }
+  .score-divider { width: 1px; height: 80px; background: var(--border); }
+  .score-details { flex: 1; }
+  .score-class { font-size: 1.3rem; font-weight: 700; color: var(--amber); margin-bottom: 6px; }
+  .score-desc { font-size: .88rem; color: var(--muted); line-height: 1.55; }
+
+  /* Section */
+  .section { margin-bottom: 36px; }
+  .section-title { font-size: 1rem; font-weight: 700; color: var(--navy); text-transform: uppercase; letter-spacing: .08em; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 2px solid var(--border); }
+
+  /* Dimension card */
+  .dim-card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 20px 22px; margin-bottom: 12px; }
+  .dim-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+  .dim-title { font-size: .95rem; font-weight: 700; }
+  .dim-weight { font-size: .72rem; color: var(--muted); background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 2px 10px; }
+  .score-badge { font-size: 1.1rem; font-weight: 800; min-width: 44px; text-align: center; }
+  .score-5 { color: var(--amber); }
+  .score-6 { color: var(--blue); }
+  .score-2 { color: var(--red); }
+  .score-4 { color: var(--amber); }
+
+  /* Checklist */
+  .checklist { display: flex; flex-direction: column; gap: 5px; margin-top: 8px; }
+  .check-item { display: flex; gap: 8px; font-size: .82rem; line-height: 1.45; }
+  .check-pass { color: var(--green); font-weight: 700; flex-shrink: 0; }
+  .check-fail { color: var(--red); font-weight: 700; flex-shrink: 0; }
+  .check-text-pass { color: var(--text); }
+  .check-text-fail { color: var(--muted); }
+
+  /* Gap cards */
+  .gap-card { border-left: 4px solid var(--red); background: rgba(220,38,38,.04); border-radius: 0 8px 8px 0; padding: 14px 18px; margin-bottom: 10px; }
+  .gap-card.amber { border-color: var(--amber); background: rgba(217,119,6,.04); }
+  .gap-rank { font-size: .68rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin-bottom: 4px; }
+  .gap-title { font-size: .95rem; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+  .gap-desc { font-size: .82rem; color: var(--muted); line-height: 1.5; }
+  .gap-impact { font-size: .78rem; font-weight: 600; color: var(--red); margin-top: 6px; }
+  .gap-card.amber .gap-impact { color: var(--amber); }
+
+  /* Wireframe container */
+  .wireframe-container { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 20px; margin-bottom: 16px; }
+  .wireframe-title { font-size: .88rem; font-weight: 700; color: var(--navy); margin-bottom: 14px; }
+  svg.wireframe { width: 100%; height: auto; border-radius: 6px; display: block; }
+
+  /* Implementation table */
+  .impl-table { width: 100%; border-collapse: collapse; font-size: .82rem; }
+  .impl-table th { background: var(--navy); color: #fff; padding: 10px 14px; text-align: left; font-weight: 600; font-size: .78rem; }
+  .impl-table th:first-child { border-radius: 8px 0 0 0; }
+  .impl-table th:last-child { border-radius: 0 8px 0 0; }
+  .impl-table td { padding: 10px 14px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  .impl-table tr:last-child td { border-bottom: none; }
+  .impl-table tr:nth-child(even) td { background: var(--surface); }
+  .priority-high { color: var(--red); font-weight: 700; }
+  .priority-med  { color: var(--amber); font-weight: 700; }
+  .priority-low  { color: var(--green); font-weight: 700; }
+  code { font-family: 'Courier New', monospace; font-size: .78rem; background: var(--surface); border: 1px solid var(--border); padding: 1px 5px; border-radius: 4px; }
+
+  .bar-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+  .bar-label { font-size: .8rem; min-width: 160px; color: var(--text); }
+  .bar-track { flex: 1; height: 8px; background: var(--border); border-radius: 4px; overflow: hidden; }
+  .bar-fill { height: 100%; border-radius: 4px; }
+  .bar-score { font-size: .8rem; font-weight: 700; min-width: 40px; text-align: right; }
+
+  .footer { text-align: center; font-size: .74rem; color: var(--muted); padding: 24px 0; border-top: 1px solid var(--border); margin-top: 40px; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- ── HEADER ─────────────────────────────────────────────────────────────── -->
+  <div class="report-header">
+    <div class="label">UX Validation Report · FP&A Dashboard</div>
+    <h1>XPTO Campinas — Q1 2025</h1>
+    <div class="meta">Avaliado em 22 de abril de 2026 · Skill: fpna-dashboard-ux · Claude Sonnet 4.6</div>
+  </div>
+
+  <!-- ── SCORE GERAL ────────────────────────────────────────────────────────── -->
+  <div class="score-box">
+    <div class="score-main">
+      <div class="score-number">4.7</div>
+      <div class="score-max">/ 10</div>
+    </div>
+    <div class="score-divider"></div>
+    <div class="score-details">
+      <div class="score-class">Dashboard Analítico</div>
+      <div class="score-desc">
+        O sistema tem estrutura visual sólida e camada de IA funcional, mas carece de contexto específico para clínica de imagem e de interatividade no nível CFO.
+        Para escalar de produto analítico a sistema de decisão, os gaps críticos são: ocupação de equipamentos de imagem (RM/TC/US) e simulações de cenário interativas.
+      </div>
+    </div>
+  </div>
+
+  <!-- ── RADAR VISUAL ───────────────────────────────────────────────────────── -->
+  <div class="section">
+    <div class="section-title">Score por Dimensão</div>
+    <div style="background:var(--card); border:1px solid var(--border); border-radius:10px; padding:20px 24px;">
+      <div class="bar-row">
+        <div class="bar-label">Hierarquia (2.0x)</div>
+        <div class="bar-track"><div class="bar-fill" style="width:50%; background:var(--amber);"></div></div>
+        <div class="bar-score" style="color:var(--amber);">5/10</div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label">IA Layer (2.0x)</div>
+        <div class="bar-track"><div class="bar-fill" style="width:50%; background:var(--amber);"></div></div>
+        <div class="bar-score" style="color:var(--amber);">5/10</div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label">Navegação (1.5x)</div>
+        <div class="bar-track"><div class="bar-fill" style="width:50%; background:var(--amber);"></div></div>
+        <div class="bar-score" style="color:var(--amber);">5/10</div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label">Perf. Cognitiva (1.5x)</div>
+        <div class="bar-track"><div class="bar-fill" style="width:60%; background:var(--blue);"></div></div>
+        <div class="bar-score" style="color:var(--blue);">6/10</div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label">Contexto Clínica (1.0x)</div>
+        <div class="bar-track"><div class="bar-fill" style="width:20%; background:var(--red);"></div></div>
+        <div class="bar-score" style="color:var(--red);">2/10</div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label">Nível CFO (1.0x)</div>
+        <div class="bar-track"><div class="bar-fill" style="width:40%; background:var(--amber);"></div></div>
+        <div class="bar-score" style="color:var(--amber);">4/10</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── DIMENSÕES ─────────────────────────────────────────────────────────── -->
+  <div class="section">
+    <div class="section-title">Avaliação por Dimensão</div>
+
+    <!-- DIM 1 -->
+    <div class="dim-card">
+      <div class="dim-header">
+        <div>
+          <div class="dim-title">D1 · Hierarquia de Informação</div>
+          <div class="dim-weight">peso 2.0x · contribuição 11.1</div>
+        </div>
+        <div class="score-badge score-5">5/10</div>
+      </div>
+      <div class="checklist">
+        <div class="check-item"><span class="check-pass">✓</span><span class="check-text-pass">Margem operacional em destaque como número principal no hero (R$ 2.8rem, bold)</span></div>
+        <div class="check-item"><span class="check-pass">✓</span><span class="check-text-pass">Receita e despesas visíveis no 1º viewport com variação colorida vs orçado</span></div>
+        <div class="check-item"><span class="check-pass">✓</span><span class="check-text-pass">InsightsGrid: melhor/pior centro de custo + tendência + economia Q1</span></div>
+        <div class="check-item"><span class="check-pass">✓</span><span class="check-text-pass">Botão "Análise completa →" como CTA primário no hero</span></div>
+        <div class="check-item"><span class="check-fail">✗</span><span class="check-text-fail">Sem EBITDA separado — margem = receita − despesas, mas não há rótulo explícito de EBITDA</span></div>
+        <div class="check-item"><span class="check-fail">✗</span><span class="check-text-fail">Sem comparação vs. trimestre anterior (QoQ) ou mesmo período ano anterior (YoY)</span></div>
+        <div class="check-item"><span class="check-fail">✗</span><span class="check-text-fail">Hero não prioriza urgência — não há indicador de "o que requer ação imediata"</span></div>
+        <div class="check-item"><span class="check-fail">✗</span><span class="check-text-fail">Sem posição de caixa / DSO — CFO não consegue avaliar liquidez no primeiro viewport</span></div>
+      </div>
+    </div>
+
+    <!-- DIM 2 -->
+    <div class="dim-card">
+      <div class="dim-header">
+        <div>
+          <div class="dim-title">D2 · IA Layer</div>
+          <div class="dim-weight">peso 2.0x · contribuição 11.1</div>
+        </div>
+        <div class="score-badge score-5">5/10</div>
+      </div>
+      <div class="checklist">
+        <div class="check-item"><span class="check-pass">✓</span><span class="check-text-pass">NarrativePanel com 4 seções estruturadas (Resultado, Diagnóstico, Alerta, Recomendação)</span></div>
+        <div class="check-item"><span class="check-pass">✓</span><span class="check-text-pass">Shimmer skeleton loading state com animação CSS nativa</span></div>
+        <div class="check-item"><span class="check-pass">✓</span><span class="check-text-pass">Fallback UI gracioso quando narrative.json indisponível</span></div>
+        <div class="check-item"><span class="check-pass">✓</span><span class="check-text-pass">Seções com codificação de cor semântica (risco=vermelho, recomendação=verde, diagnóstico=âmbar)</span></div>
+        <div class="check-item"><span class="check-fail">✗</span><span class="check-text-fail">Narrativa estática — gerada uma vez offline, não responde a perguntas do CFO</span></div>
+        <div class="check-item"><span class="check-fail">✗</span><span class="check-text-fail">Sem decomposição causal — "por que" a variação aconteceu não está linkado ao gráfico correspondente</span></div>
+        <div class="check-item"><span class="check-fail">✗</span><span class="check-text-fail">Sem interface de chat / Q&A contextual sobre os dados</span></div>
+        <div class="check-item"><span class="check-fail">✗</span><span class="check-text-fail">Fallback cita <code>ANTHROPIC_API_KEY</code> mas o sistema usa OpenAI — inconsistência de mensagem</span></div>
+      </div>
+    </div>
+
+    <!-- DIM 3 -->
+    <div class="dim-card">
+      <div class="dim-header">
+        <div>
+          <div class="dim-title">D3 · Navegação</div>
+          <div class="dim-weight">peso 1.5x · contribuição 8.3</div>
+        </div>
+        <div class="score-badge score-5">5/10</div>
+      </div>
+      <div class="checklist">
+        <div class="check-item"><span class="check-pass">✓</span><span class="check-text-pass">5 views acessíveis: Resumo, Despesas, Receita, DRE, ML Insights</span></div>
+        <div class="check-item"><span class="check-pass">✓</span><span class="check-text-pass">Botão "← Voltar" nas sub-views retorna ao dashboard</span></div>
+        <div class="check-item"><span class="check-pass">✓</span><span class="check-text-pass">Tab strip visível no dashboard view com underline indicator no tab ativo</span></div>
+        <div class="check-item"><span class="check-fail">✗</span><span class="check-text-fail">Tab strip desaparece nas sub-views — navegação lateral torna-se impossível sem voltar ao dashboard</span></div>
+        <div class="check-item"><span class="check-fail">✗</span><span class="check-text-fail">Sem estrutura de fluxo: Visão Geral → Identificar Problema → Diagnosticar Causa → Definir Ação</span></div>
+        <div class="check-item"><span class="check-fail">✗</span><span class="check-text-fail">Sem breadcrumb — usuário perde contexto de posição ao navegar</span></div>
+        <div class="check-item"><span class="check-fail">✗</span><span class="check-text-fail">Botões de navegação no header das sub-views são diferentes dos tabs do dashboard — inconsistência de padrão</span></div>
+      </div>
+    </div>
+
+    <!-- DIM 4 -->
+    <div class="dim-card">
+      <div class="dim-header">
+        <div>
+          <div class="dim-title">D4 · Performance Cognitiva</div>
+          <div class="dim-weight">peso 1.5x · contribuição 10.0</div>
+        </div>
+        <div class="score-badge score-6">6/10</div>
+      </div>
+      <div class="checklist">
+        <div class="check-item"><span class="check-pass">✓</span><span class="check-text-pass">Design system com variáveis CSS semânticas (--green, --red, --teal, --navy, --muted)</span></div>
+        <div class="check-item"><span class="check-pass">✓</span><span class="check-text-pass">Diversidade de chart types: combo bar-line, horizontal ranking, forecast, scatter cluster, risk matrix</span></div>
+        <div class="check-item"><span class="check-pass">✓</span><span class="check-text-pass">Sistema de badges kpi-badge / badge-up / badge-down consistente</span></div>
+        <div class="check-item"><span class="check-pass">✓</span><span class="check-text-pass">Estados de loading com skeleton shimmer (NarrativePanel + MLView)</span></div>
+        <div class="check-item"><span class="check-pass">✓</span><span class="check-text-pass">Busca + filtro por centro de custo na AnaliseView</span></div>
+        <div class="check-item"><span class="check-pass">✓</span><span class="check-text-pass">Dividers com labels como separadores de seção</span></div>
+        <div class="check-item"><span class="check-fail">✗</span><span class="check-text-fail">ContaTable sem paginação — pode exibir 50+ contas de uma vez, sobrecarga cognitiva</span></div>
+        <div class="check-item"><span class="check-fail">✗</span><span class="check-text-fail">MLView exibe todos os módulos (forecast + anomalias + clusters + risco) sem progressive disclosure</span></div>
+      </div>
+    </div>
+
+    <!-- DIM 5 -->
+    <div class="dim-card">
+      <div class="dim-header">
+        <div>
+          <div class="dim-title">D5 · Contexto de Clínica de Imagem</div>
+          <div class="dim-weight">peso 1.0x · contribuição 2.2</div>
+        </div>
+        <div class="score-badge score-2">2/10</div>
+      </div>
+      <div class="checklist">
+        <div class="check-item"><span class="check-pass">✓</span><span class="check-text-pass">ReceitaConvenioChart: top 10 convênios com % da receita — contexto de mix de pagadores</span></div>
+        <div class="check-item"><span class="check-pass">✓</span><span class="check-text-pass">ReceitaGrupoChart: mix de receita por grupo de produto (potencialmente por tipo de exame)</span></div>
+        <div class="check-item"><span class="check-fail">✗</span><span class="check-text-fail">SEM taxa de ocupação por equipamento (RM, TC, RX, US) — KPI mais crítico de clínica de imagem</span></div>
+        <div class="check-item"><span class="check-fail">✗</span><span class="check-text-fail">SEM ticket médio por tipo de exame / por convênio — impossível avaliar mix pricing</span></div>
+        <div class="check-item"><span class="check-fail">✗</span><span class="check-text-fail">SEM taxa de no-show / cancelamento — impacto direto em receita não capturado</span></div>
+        <div class="check-item"><span class="check-fail">✗</span><span class="check-text-fail">SEM margem por tipo de exame — não é possível identificar exames deficitários</span></div>
+        <div class="check-item"><span class="check-fail">✗</span><span class="check-text-fail">SEM horas produtivas vs. disponíveis por equipamento — capacidade ociosa invisível</span></div>
+        <div class="check-item"><span class="check-fail">✗</span><span class="check-text-fail">Análise de despesas não destaca custo de manutenção de equipamentos de imagem separadamente</span></div>
+      </div>
+    </div>
+
+    <!-- DIM 6 -->
+    <div class="dim-card">
+      <div class="dim-header">
+        <div>
+          <div class="dim-title">D6 · Nível CFO</div>
+          <div class="dim-weight">peso 1.0x · contribuição 4.4</div>
+        </div>
+        <div class="score-badge score-4">4/10</div>
+      </div>
+      <div class="checklist">
+        <div class="check-item"><span class="check-pass">✓</span><span class="check-text-pass">ForecastKpis: projeção Q2 com 3 cenários (otimista/base/pessimista) para receita, despesas e margem</span></div>
+        <div class="check-item"><span class="check-pass">✓</span><span class="check-text-pass">RiskPanel: matriz de risco de contas com classificação Alto/Médio/Baixo</span></div>
+        <div class="check-item"><span class="check-pass">✓</span><span class="check-text-pass">AnomaliesTable: detecção automática de anomalias</span></div>
+        <div class="check-item"><span class="check-pass">✓</span><span class="check-text-pass">NarrativePanel: sumário executivo com seção de recomendação para Q2</span></div>
+        <div class="check-item"><span class="check-fail">✗</span><span class="check-text-fail">Cenários fixos ±8% — CFO não pode ajustar premissas interativamente</span></div>
+        <div class="check-item"><span class="check-fail">✗</span><span class="check-text-fail">Sem sliders de what-if (ex: "e se receita cair 15%? qual impacto na margem?")</span></div>
+        <div class="check-item"><span class="check-fail">✗</span><span class="check-text-fail">Sem análise de breakeven por tipo de exame</span></div>
+        <div class="check-item"><span class="check-fail">✗</span><span class="check-text-fail">Sem comparação YoY — Q1 2025 vs. Q1 2024 ausente</span></div>
+        <div class="check-item"><span class="check-fail">✗</span><span class="check-text-fail">Sem workflow de ação: a IA recomenda, mas o CFO não tem onde "aprovar", "delegar" ou "escalar"</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── TOP 5 GAPS ─────────────────────────────────────────────────────────── -->
+  <div class="section">
+    <div class="section-title">Top 5 Gaps Críticos</div>
+
+    <div class="gap-card">
+      <div class="gap-rank">Gap #1 · Dimensão 5 · Bloqueador comercial</div>
+      <div class="gap-title">Zero contexto de ocupação de equipamentos de imagem</div>
+      <div class="gap-desc">
+        O produto não tem nenhum KPI de taxa de ocupação por modalidade (RM, TC, RX, Ultrassom). Para uma clínica de imagem, este é o KPI operacional mais crítico — um RM ocioso a 40% é a maior fonte de perda de receita, mas o dashboard atual não o mostra.
+      </div>
+      <div class="gap-impact">Impacto: sem este dado, o sistema não é vendável para gestores de clínica de imagem</div>
+    </div>
+
+    <div class="gap-card amber">
+      <div class="gap-rank">Gap #2 · Dimensão 6 · Diferencial de produto</div>
+      <div class="gap-title">Cenários de forecast estáticos — sem what-if interativo</div>
+      <div class="gap-desc">
+        Os cenários ±8% são calculados em Python e exibidos como texto estático. O CFO não pode simular "e se o convênio X reduzir repasse em 10%?" ou "e se contratarmos mais um radiologista?". Sem interatividade, a seção de ML vira report, não ferramenta.
+      </div>
+      <div class="gap-impact">Impacto: reduz percepção de valor da camada ML de "sistema de decisão" para "relatório automatizado"</div>
+    </div>
+
+    <div class="gap-card amber">
+      <div class="gap-rank">Gap #3 · Dimensão 2 · Qualidade da IA Layer</div>
+      <div class="gap-title">Narrativa IA estática sem decomposição causal linkada</div>
+      <div class="gap-desc">
+        O NarrativePanel exibe texto mas não conecta o insight ao dado subjacente. "Despesas com PESSOAL excederam orçado em R$ 120k" não tem link para o gráfico, não destaca a linha específica na tabela, e não responde perguntas de follow-up. Além disso, o fallback cita incorretamente ANTHROPIC_API_KEY.
+      </div>
+      <div class="gap-impact">Impacto: CFO não consegue aprofundar investigação a partir da narrativa</div>
+    </div>
+
+    <div class="gap-card amber">
+      <div class="gap-rank">Gap #4 · Dimensão 1 · Hierarquia de informação</div>
+      <div class="gap-title">Hero sem comparação temporal (QoQ/YoY) e sem urgência</div>
+      <div class="gap-desc">
+        O ResultadoHero compara apenas vs. orçado. Um CFO experiente sempre quer saber também vs. mesmo período anterior. Sem "Q1 2024: R$ X.XM → Q1 2025: R$ X.XM (+X%)" a análise de tendência fica incompleta. Adicionalmente, não há indicador visual de "ação urgente requerida".
+      </div>
+      <div class="gap-impact">Impacto: decisões tomadas sem contexto histórico podem subestimar problemas estruturais</div>
+    </div>
+
+    <div class="gap-card amber">
+      <div class="gap-rank">Gap #5 · Dimensão 3 · Navegação</div>
+      <div class="gap-title">Tabs desaparecem nas sub-views — navegação lateral bloqueada</div>
+      <div class="gap-desc">
+        Ao entrar em "Despesas", "Receita", "DRE" ou "ML", o tab strip some e o único retorno é "← Voltar" para o dashboard. O usuário não pode ir de Despesas para Receita diretamente. Em sessões longas de análise, isso cria 2x o número de cliques necessários e desorienta.
+      </div>
+      <div class="gap-impact">Impacto: friction de navegação que desmotiva exploração aprofundada dos dados</div>
+    </div>
+  </div>
+
+  <!-- ── WIREFRAMES ─────────────────────────────────────────────────────────── -->
+  <div class="section">
+    <div class="section-title">Wireframes de Correção (Dimensões com Score &lt; 6)</div>
+
+    <!-- Wireframe D5: Equipment Occupancy Panel -->
+    <div class="wireframe-container">
+      <div class="wireframe-title">D5 · Novo Componente: EquipamentosPanel — Taxa de Ocupação por Modalidade</div>
+      <svg class="wireframe" viewBox="0 0 800 280" xmlns="http://www.w3.org/2000/svg" style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px;">
+        <!-- Card background -->
+        <rect x="12" y="12" width="776" height="256" rx="10" fill="white" stroke="#e2e8f0"/>
+        <!-- Title -->
+        <text x="28" y="38" font-family="sans-serif" font-size="11" font-weight="700" fill="#0f172a">Taxa de Ocupação — Equipamentos Q1 2025</text>
+        <text x="28" y="52" font-family="sans-serif" font-size="9" fill="#94a3b8">Horas realizadas / Horas disponíveis por modalidade</text>
+
+        <!-- RM Card -->
+        <rect x="28" y="66" width="168" height="90" rx="8" fill="#f0fdf4" stroke="#86efac"/>
+        <text x="44" y="86" font-family="sans-serif" font-size="9" fill="#64748b" font-weight="600">RESSONÂNCIA MAGNÉTICA</text>
+        <text x="44" y="106" font-family="sans-serif" font-size="24" font-weight="800" fill="#059669">78%</text>
+        <rect x="44" y="116" width="100" height="6" rx="3" fill="#dcfce7"/>
+        <rect x="44" y="116" width="78" height="6" rx="3" fill="#059669"/>
+        <text x="44" y="144" font-family="sans-serif" font-size="9" fill="#94a3b8">312h / 400h disponíveis</text>
+
+        <!-- TC Card -->
+        <rect x="208" y="66" width="168" height="90" rx="8" fill="#fefce8" stroke="#fde047"/>
+        <text x="224" y="86" font-family="sans-serif" font-size="9" fill="#64748b" font-weight="600">TOMOGRAFIA</text>
+        <text x="224" y="106" font-family="sans-serif" font-size="24" font-weight="800" fill="#d97706">55%</text>
+        <rect x="224" y="116" width="100" height="6" rx="3" fill="#fef9c3"/>
+        <rect x="224" y="116" width="55" height="6" rx="3" fill="#d97706"/>
+        <text x="224" y="144" font-family="sans-serif" font-size="9" fill="#94a3b8">220h / 400h disponíveis</text>
+
+        <!-- RX Card -->
+        <rect x="388" y="66" width="168" height="90" rx="8" fill="#f0f9ff" stroke="#7dd3fc"/>
+        <text x="404" y="86" font-family="sans-serif" font-size="9" fill="#64748b" font-weight="600">RAIO-X</text>
+        <text x="404" y="106" font-family="sans-serif" font-size="24" font-weight="800" fill="#0891b2">91%</text>
+        <rect x="404" y="116" width="100" height="6" rx="3" fill="#e0f2fe"/>
+        <rect x="404" y="116" width="91" height="6" rx="3" fill="#0891b2"/>
+        <text x="404" y="144" font-family="sans-serif" font-size="9" fill="#94a3b8">364h / 400h disponíveis</text>
+
+        <!-- US Card -->
+        <rect x="568" y="66" width="168" height="90" rx="8" fill="#fef2f2" stroke="#fca5a5"/>
+        <text x="584" y="86" font-family="sans-serif" font-size="9" fill="#64748b" font-weight="600">ULTRASSOM</text>
+        <text x="584" y="106" font-family="sans-serif" font-size="24" font-weight="800" fill="#dc2626">38%</text>
+        <rect x="584" y="116" width="100" height="6" rx="3" fill="#fee2e2"/>
+        <rect x="584" y="116" width="38" height="6" rx="3" fill="#dc2626"/>
+        <text x="584" y="144" font-family="sans-serif" font-size="9" fill="#94a3b8">152h / 400h disponíveis · ⚠ CRÍTICO</text>
+
+        <!-- Monthly trend mini chart area -->
+        <text x="28" y="178" font-family="sans-serif" font-size="9" fill="#64748b" font-weight="600">TENDÊNCIA MENSAL DE OCUPAÇÃO</text>
+        <line x1="28" y1="242" x2="756" y2="242" stroke="#e2e8f0" stroke-width="1"/>
+        <!-- RM line -->
+        <polyline points="80,220 240,210 400,200" stroke="#059669" stroke-width="2" fill="none"/>
+        <!-- TC line -->
+        <polyline points="80,230 240,225 400,220" stroke="#d97706" stroke-width="2" fill="none"/>
+        <!-- RX line -->
+        <polyline points="80,200 240,195 400,192" stroke="#0891b2" stroke-width="2" fill="none"/>
+        <!-- US line -->
+        <polyline points="80,238 240,235 400,236" stroke="#dc2626" stroke-width="2" fill="none"/>
+        <!-- X axis labels -->
+        <text x="75" y="254" font-family="sans-serif" font-size="8" fill="#94a3b8" text-anchor="middle">Jan</text>
+        <text x="235" y="254" font-family="sans-serif" font-size="8" fill="#94a3b8" text-anchor="middle">Fev</text>
+        <text x="395" y="254" font-family="sans-serif" font-size="8" fill="#94a3b8" text-anchor="middle">Mar</text>
+        <!-- Legend -->
+        <rect x="500" y="196" width="8" height="8" rx="2" fill="#059669"/>
+        <text x="512" y="204" font-family="sans-serif" font-size="8" fill="#64748b">RM</text>
+        <rect x="540" y="196" width="8" height="8" rx="2" fill="#d97706"/>
+        <text x="552" y="204" font-family="sans-serif" font-size="8" fill="#64748b">TC</text>
+        <rect x="580" y="196" width="8" height="8" rx="2" fill="#0891b2"/>
+        <text x="592" y="204" font-family="sans-serif" font-size="8" fill="#64748b">RX</text>
+        <rect x="620" y="196" width="8" height="8" rx="2" fill="#dc2626"/>
+        <text x="632" y="204" font-family="sans-serif" font-size="8" fill="#64748b">US ⚠</text>
+      </svg>
+      <div style="font-size:.78rem; color:var(--muted); margin-top:8px;">Arquivo proposto: <code>dashboard/src/components/EquipamentosPanel.jsx</code> — requer novo campo no pipeline: <code>ocupacao_equipamentos</code></div>
+    </div>
+
+    <!-- Wireframe D6: What-If Simulator -->
+    <div class="wireframe-container">
+      <div class="wireframe-title">D6 · Novo Componente: WhatIfSimulator — Simulação Interativa de Cenários</div>
+      <svg class="wireframe" viewBox="0 0 800 300" xmlns="http://www.w3.org/2000/svg" style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px;">
+        <rect x="12" y="12" width="776" height="276" rx="10" fill="white" stroke="#e2e8f0"/>
+        <text x="28" y="38" font-family="sans-serif" font-size="11" font-weight="700" fill="#0f172a">Simulador What-If · Q2 2025</text>
+        <text x="28" y="52" font-family="sans-serif" font-size="9" fill="#94a3b8">Ajuste as premissas e veja o impacto projetado na margem</text>
+
+        <!-- Left: sliders panel -->
+        <rect x="28" y="62" width="360" height="214" rx="8" fill="#f8fafc" stroke="#e2e8f0"/>
+        <text x="44" y="82" font-family="sans-serif" font-size="9" font-weight="700" fill="#64748b">PREMISSAS DE RECEITA</text>
+        <!-- Slider 1 -->
+        <text x="44" y="100" font-family="sans-serif" font-size="9" fill="#334155">Crescimento de volume de exames</text>
+        <rect x="44" y="106" width="200" height="4" rx="2" fill="#e2e8f0"/>
+        <rect x="44" y="106" width="120" height="4" rx="2" fill="#0d9488"/>
+        <circle cx="164" cy="108" r="7" fill="white" stroke="#0d9488" stroke-width="2"/>
+        <text x="252" y="112" font-family="sans-serif" font-size="9" font-weight="700" fill="#0d9488">+5%</text>
+        <!-- Slider 2 -->
+        <text x="44" y="130" font-family="sans-serif" font-size="9" fill="#334155">Variação de repasse convênios</text>
+        <rect x="44" y="136" width="200" height="4" rx="2" fill="#e2e8f0"/>
+        <rect x="44" y="136" width="80" height="4" rx="2" fill="#dc2626"/>
+        <circle cx="124" cy="138" r="7" fill="white" stroke="#dc2626" stroke-width="2"/>
+        <text x="252" y="142" font-family="sans-serif" font-size="9" font-weight="700" fill="#dc2626">−8%</text>
+
+        <text x="44" y="162" font-family="sans-serif" font-size="9" font-weight="700" fill="#64748b">PREMISSAS DE DESPESA</text>
+        <!-- Slider 3 -->
+        <text x="44" y="180" font-family="sans-serif" font-size="9" fill="#334155">Crescimento de pessoal</text>
+        <rect x="44" y="186" width="200" height="4" rx="2" fill="#e2e8f0"/>
+        <rect x="44" y="186" width="140" height="4" rx="2" fill="#d97706"/>
+        <circle cx="184" cy="188" r="7" fill="white" stroke="#d97706" stroke-width="2"/>
+        <text x="252" y="192" font-family="sans-serif" font-size="9" font-weight="700" fill="#d97706">+7%</text>
+        <!-- Slider 4 -->
+        <text x="44" y="210" font-family="sans-serif" font-size="9" fill="#334155">Custo manutenção equipamentos</text>
+        <rect x="44" y="216" width="200" height="4" rx="2" fill="#e2e8f0"/>
+        <rect x="44" y="216" width="100" height="4" rx="2" fill="#0d9488"/>
+        <circle cx="144" cy="218" r="7" fill="white" stroke="#0d9488" stroke-width="2"/>
+        <text x="252" y="222" font-family="sans-serif" font-size="9" font-weight="700" fill="#0d9488">0%</text>
+
+        <!-- Reset button -->
+        <rect x="44" y="244" width="80" height="20" rx="6" fill="white" stroke="#e2e8f0"/>
+        <text x="84" y="257" font-family="sans-serif" font-size="9" fill="#64748b" text-anchor="middle">↺ Reset</text>
+
+        <!-- Right: impact panel -->
+        <rect x="404" y="62" width="372" height="214" rx="8" fill="#0f172a"/>
+        <text x="420" y="82" font-family="sans-serif" font-size="9" font-weight="700" fill="rgba(255,255,255,.5)">IMPACTO PROJETADO</text>
+        <!-- Margem result -->
+        <text x="420" y="108" font-family="sans-serif" font-size="9" fill="rgba(255,255,255,.55)">Margem Q2 Projetada</text>
+        <text x="420" y="136" font-family="sans-serif" font-size="30" font-weight="900" fill="#f59e0b">R$ 842K</text>
+        <rect x="420" y="144" width="60" height="16" rx="4" fill="rgba(239,68,68,.2)"/>
+        <text x="450" y="155" font-family="sans-serif" font-size="8" font-weight="700" fill="#ef4444" text-anchor="middle">▼ −12% vs base</text>
+
+        <!-- Breakdown -->
+        <line x1="420" y1="172" x2="760" y2="172" stroke="rgba(255,255,255,.1)" stroke-width="1"/>
+        <text x="420" y="190" font-family="sans-serif" font-size="9" fill="rgba(255,255,255,.55)">Receita Q2</text>
+        <text x="750" y="190" font-family="sans-serif" font-size="9" font-weight="700" fill="#14b8a6" text-anchor="end">R$ 3.1M</text>
+        <text x="420" y="210" font-family="sans-serif" font-size="9" fill="rgba(255,255,255,.55)">Despesas Q2</text>
+        <text x="750" y="210" font-family="sans-serif" font-size="9" font-weight="700" fill="#f87171" text-anchor="end">R$ 2.3M</text>
+        <text x="420" y="230" font-family="sans-serif" font-size="9" fill="rgba(255,255,255,.55)">Breakeven volume</text>
+        <text x="750" y="230" font-family="sans-serif" font-size="9" font-weight="700" fill="#fbbf24" text-anchor="end">1.840 exames/mês</text>
+
+        <!-- Alert -->
+        <rect x="420" y="244" width="336" height="20" rx="4" fill="rgba(239,68,68,.15)"/>
+        <text x="588" y="257" font-family="sans-serif" font-size="8" fill="#fca5a5" text-anchor="middle">⚠ Cenário atual abaixo do breakeven — revisar repasse com convênios</text>
+      </svg>
+      <div style="font-size:.78rem; color:var(--muted); margin-top:8px;">Arquivo proposto: <code>dashboard/src/components/WhatIfSimulator.jsx</code> — cálculo client-side, sem chamada ao backend</div>
+    </div>
+
+    <!-- Wireframe D3: Persistent Navigation -->
+    <div class="wireframe-container">
+      <div class="wireframe-title">D3 · Correção de Navegação — Tabs Persistentes em Todas as Views</div>
+      <svg class="wireframe" viewBox="0 0 800 180" xmlns="http://www.w3.org/2000/svg" style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px;">
+        <!-- Header bg -->
+        <rect x="0" y="0" width="800" height="180" rx="8" fill="#0f172a"/>
+        <!-- Top bar -->
+        <text x="20" y="22" font-family="sans-serif" font-size="8" fill="rgba(255,255,255,.4)" font-weight="600">FP&amp;A · XPTO CAMPINAS · Q1 2025</text>
+        <text x="20" y="38" font-family="sans-serif" font-size="15" font-weight="800" fill="white">Análise de Despesas</text>
+        <!-- Breadcrumb -->
+        <text x="20" y="54" font-family="sans-serif" font-size="9" fill="rgba(255,255,255,.4)">Início</text>
+        <text x="50" y="54" font-family="sans-serif" font-size="9" fill="rgba(255,255,255,.25)">›</text>
+        <text x="58" y="54" font-family="sans-serif" font-size="9" fill="rgba(255,255,255,.7)" font-weight="600">Despesas</text>
+
+        <!-- Tab strip (persistent) -->
+        <line x1="0" y1="64" x2="800" y2="64" stroke="rgba(255,255,255,.08)" stroke-width="1"/>
+        <!-- Tab: Resumo -->
+        <text x="24" y="82" font-family="sans-serif" font-size="10" fill="rgba(255,255,255,.4)">Resumo</text>
+        <!-- Tab: Despesas (active) -->
+        <text x="90" y="82" font-family="sans-serif" font-size="10" font-weight="700" fill="white">Despesas</text>
+        <line x1="90" y1="88" x2="142" y2="88" stroke="white" stroke-width="2"/>
+        <!-- Tab: Receita -->
+        <text x="156" y="82" font-family="sans-serif" font-size="10" fill="rgba(255,255,255,.4)">Receita</text>
+        <!-- Tab: DRE -->
+        <text x="216" y="82" font-family="sans-serif" font-size="10" fill="rgba(255,255,255,.4)">DRE</text>
+        <!-- Tab: ML -->
+        <text x="252" y="82" font-family="sans-serif" font-size="10" fill="rgba(255,255,255,.4)">ML Insights</text>
+
+        <!-- BEFORE: current behavior label -->
+        <rect x="20" y="106" width="360" height="60" rx="6" fill="rgba(220,38,38,.1)" stroke="rgba(220,38,38,.3)"/>
+        <text x="36" y="124" font-family="sans-serif" font-size="9" font-weight="700" fill="#f87171">✗ ATUAL: Sub-view sem tabs</text>
+        <text x="36" y="140" font-family="sans-serif" font-size="8" fill="rgba(255,255,255,.45)">Header mostra apenas "← Voltar" e botões</text>
+        <text x="36" y="154" font-family="sans-serif" font-size="8" fill="rgba(255,255,255,.45)">isolados. Usuário não consegue ir Despesas→Receita.</text>
+
+        <!-- AFTER: proposed behavior label -->
+        <rect x="416" y="106" width="360" height="60" rx="6" fill="rgba(5,150,105,.1)" stroke="rgba(5,150,105,.3)"/>
+        <text x="432" y="124" font-family="sans-serif" font-size="9" font-weight="700" fill="#34d399">✓ PROPOSTO: Tabs persistentes em todas as views</text>
+        <text x="432" y="140" font-family="sans-serif" font-size="8" fill="rgba(255,255,255,.45)">Tab strip sempre visível. Tab ativo destacado.</text>
+        <text x="432" y="154" font-family="sans-serif" font-size="8" fill="rgba(255,255,255,.45)">Breadcrumb indica posição atual.</text>
+      </svg>
+      <div style="font-size:.78rem; color:var(--muted); margin-top:8px;">Correção em <code>dashboard/src/App.jsx</code> — mover tab strip para fora do condicional <code>view === 'dashboard'</code></div>
+    </div>
+
+    <!-- Wireframe D1: Hero com QoQ -->
+    <div class="wireframe-container">
+      <div class="wireframe-title">D1 · Hero Melhorado — Comparação QoQ e Indicador de Urgência</div>
+      <svg class="wireframe" viewBox="0 0 800 160" xmlns="http://www.w3.org/2000/svg" style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px;">
+        <rect x="12" y="12" width="776" height="136" rx="10" fill="white" stroke="#e2e8f0"/>
+        <!-- Left: main KPI -->
+        <text x="28" y="36" font-family="sans-serif" font-size="9" font-weight="700" fill="#94a3b8">RESULTADO OPERACIONAL · Q1 2025</text>
+        <text x="28" y="68" font-family="sans-serif" font-size="32" font-weight="900" fill="#059669">R$ 1,2M</text>
+        <rect x="28" y="74" width="80" height="18" rx="4" fill="#dcfce7"/>
+        <text x="68" y="86" font-family="sans-serif" font-size="9" font-weight="700" fill="#059669" text-anchor="middle">▲ +8,3% orçado</text>
+        <!-- QoQ comparison (NEW) -->
+        <rect x="120" y="74" width="90" height="18" rx="4" fill="#f0f9ff"/>
+        <text x="165" y="86" font-family="sans-serif" font-size="9" font-weight="700" fill="#0891b2" text-anchor="middle">▲ +12% Q4 2024</text>
+        <text x="28" y="110" font-family="sans-serif" font-size="9" fill="#64748b">Receita <strong style="color:#1e293b">R$ 3,3M</strong> <span style="color:#059669">+4,1%</span>  ·  Despesas <strong>R$ 2,1M</strong> <span style="color:#059669">−2,5%</span></text>
+
+        <!-- Middle: urgent action indicator (NEW) -->
+        <rect x="380" y="22" width="210" height="116" rx="8" fill="#fef2f2" stroke="#fca5a5"/>
+        <text x="395" y="42" font-family="sans-serif" font-size="9" font-weight="700" fill="#dc2626">⚠ ATENÇÃO IMEDIATA</text>
+        <text x="395" y="58" font-family="sans-serif" font-size="8" fill="#7f1d1d">• Ultrassom: ocupação 38% (abaixo do mínimo)</text>
+        <text x="395" y="72" font-family="sans-serif" font-size="8" fill="#7f1d1d">• R$ 283k gastos sem orçamento</text>
+        <text x="395" y="86" font-family="sans-serif" font-size="8" fill="#7f1d1d">• 1 conta sem mapeamento (307006)</text>
+        <rect x="395" y="104" width="80" height="20" rx="5" fill="#dc2626"/>
+        <text x="435" y="117" font-family="sans-serif" font-size="9" font-weight="700" fill="white" text-anchor="middle">Ver detalhes →</text>
+
+        <!-- Right: CTA -->
+        <rect x="610" y="48" width="160" height="36" rx="8" fill="#0f172a"/>
+        <text x="690" y="70" font-family="sans-serif" font-size="10" font-weight="700" fill="white" text-anchor="middle">Análise completa →</text>
+      </svg>
+      <div style="font-size:.78rem; color:var(--muted); margin-top:8px;">Correção em <code>dashboard/src/App.jsx:ResultadoHero</code> — adicionar campo <code>kpis.margemQoQ</code> em <code>utils/kpis.js</code> + urgency items de <code>data.quality</code></div>
+    </div>
+
+    <!-- Wireframe D2: Narrative with drill-down -->
+    <div class="wireframe-container">
+      <div class="wireframe-title">D2 · NarrativePanel Melhorado — Links para Dados + Correção do Fallback</div>
+      <svg class="wireframe" viewBox="0 0 800 200" xmlns="http://www.w3.org/2000/svg" style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px;">
+        <rect x="12" y="12" width="776" height="176" rx="10" fill="white" stroke="#e2e8f0"/>
+        <!-- Header -->
+        <text x="28" y="36" font-family="sans-serif" font-size="9" fill="#94a3b8" font-weight="700">ANÁLISE EXECUTIVA · IA</text>
+        <text x="28" y="52" font-family="sans-serif" font-size="13" font-weight="800" fill="#0f172a">Diagnóstico Q1 2025</text>
+        <!-- AI badge -->
+        <rect x="680" y="28" width="92" height="22" rx="11" fill="rgba(16,185,129,.1)" stroke="rgba(16,185,129,.25)"/>
+        <circle cx="692" cy="39" r="3" fill="#10b981"/>
+        <text x="698" y="43" font-family="sans-serif" font-size="9" font-weight="600" fill="#10b981">AI · 22/04/2026</text>
+
+        <!-- Diagnóstico section with link -->
+        <rect x="28" y="64" width="740" height="54" rx="0" fill="rgba(245,158,11,.06)" stroke="none"/>
+        <rect x="28" y="64" width="3" height="54" rx="0" fill="#f59e0b"/>
+        <text x="40" y="80" font-family="sans-serif" font-size="8" font-weight="700" fill="#94a3b8">🔍  DIAGNÓSTICO DAS PRINCIPAIS VARIAÇÕES</text>
+        <text x="40" y="95" font-family="sans-serif" font-size="9" fill="#334155">Despesas com PESSOAL excederam orçado em R$ 120.000 (+18%). </text>
+        <!-- Linked chip (NEW) -->
+        <rect x="395" y="88" width="105" height="14" rx="4" fill="rgba(245,158,11,.2)" stroke="#f59e0b"/>
+        <text x="447" y="98" font-family="sans-serif" font-size="8" font-weight="600" fill="#d97706" text-anchor="middle">↗ Ver grupo PESSOAL</text>
+        <text x="40" y="112" font-family="sans-serif" font-size="9" fill="#334155">Materiais Médicos apresentam tendência crescente nos 3 meses.</text>
+
+        <!-- Fallback correction note -->
+        <rect x="28" y="130" width="740" height="44" rx="6" fill="#f0fdf4" stroke="#86efac"/>
+        <text x="44" y="148" font-family="sans-serif" font-size="9" font-weight="700" fill="#059669">✓ CORREÇÃO: Fallback com instrução correta</text>
+        <text x="44" y="164" font-family="sans-serif" font-size="8" fill="#334155">Alterar mensagem de erro: "Requer <tspan font-weight="700">OPENAI_API_KEY</tspan>" (não ANTHROPIC_API_KEY)</text>
+      </svg>
+      <div style="font-size:.78rem; color:var(--muted); margin-top:8px;">Correção imediata em <code>NarrativePanel.jsx:153</code> — trocar <code>ANTHROPIC_API_KEY</code> por <code>OPENAI_API_KEY</code></div>
+    </div>
+  </div>
+
+  <!-- ── IMPLEMENTATION TABLE ───────────────────────────────────────────────── -->
+  <div class="section">
+    <div class="section-title">Plano de Implementação Cirúrgica</div>
+    <table class="impl-table">
+      <thead>
+        <tr>
+          <th>Prioridade</th>
+          <th>Arquivo</th>
+          <th>Mudança</th>
+          <th>Esforço</th>
+          <th>Impacto</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="priority-high">P1 · Crítico</span></td>
+          <td><code>NarrativePanel.jsx:153</code></td>
+          <td>Trocar <code>ANTHROPIC_API_KEY</code> por <code>OPENAI_API_KEY</code> na mensagem de fallback</td>
+          <td>5 min</td>
+          <td>Corrige confusão no onboarding de novos usuários</td>
+        </tr>
+        <tr>
+          <td><span class="priority-high">P1 · Crítico</span></td>
+          <td><code>App.jsx:Header</code></td>
+          <td>Mover tab strip para fora do condicional <code>view === 'dashboard'</code> — exibir tabs em todas as views com tab ativo destacado</td>
+          <td>30 min</td>
+          <td>Elimina necessidade de voltar ao dashboard para trocar de view</td>
+        </tr>
+        <tr>
+          <td><span class="priority-high">P1 · Alto</span></td>
+          <td><code>App.jsx:ResultadoHero</code> + <code>utils/kpis.js</code></td>
+          <td>Adicionar comparação QoQ: calcular <code>margemQoQ</code> se dados de Q4 estiverem disponíveis; exibir badge adicional "vs Q4 2024"</td>
+          <td>2h</td>
+          <td>CFO tem contexto histórico sem sair da tela principal</td>
+        </tr>
+        <tr>
+          <td><span class="priority-high">P1 · Alto</span></td>
+          <td><code>App.jsx:ResultadoHero</code></td>
+          <td>Adicionar bloco "Atenção Imediata" derivado de <code>data.quality.unplanned_spending</code> e <code>data.quality.missing_contas</code></td>
+          <td>1h</td>
+          <td>CFO vê itens urgentes no 1º viewport sem precisar navegar</td>
+        </tr>
+        <tr>
+          <td><span class="priority-med">P2 · Médio</span></td>
+          <td><code>components/EquipamentosPanel.jsx</code> (novo)</td>
+          <td>Criar painel de taxa de ocupação por equipamento (RM/TC/RX/US). Requer novos campos <code>ocupacao_equipamentos</code> no <code>generate_dashboard_data.py</code></td>
+          <td>1 dia</td>
+          <td>Maior gap competitivo para clínicas de imagem — diferencial de produto</td>
+        </tr>
+        <tr>
+          <td><span class="priority-med">P2 · Médio</span></td>
+          <td><code>components/WhatIfSimulator.jsx</code> (novo)</td>
+          <td>Criar simulador interativo com sliders para premissas Q2. Cálculo client-side em JS — sem backend. Substituir ForecastKpis estático na view ML</td>
+          <td>1 dia</td>
+          <td>Transforma ML view de "relatório" para "ferramenta de decisão"</td>
+        </tr>
+        <tr>
+          <td><span class="priority-med">P2 · Médio</span></td>
+          <td><code>components/ContaTable.jsx</code></td>
+          <td>Adicionar paginação (10 itens por página) com controles de navegação prev/next e indicador "mostrando X–Y de Z contas"</td>
+          <td>1h</td>
+          <td>Elimina sobrecarga cognitiva na view de análise de despesas</td>
+        </tr>
+        <tr>
+          <td><span class="priority-med">P2 · Médio</span></td>
+          <td><code>components/NarrativePanel.jsx</code></td>
+          <td>Adicionar chips de link em cada seção que naveguem para a view correspondente (ex: "Ver grupo PESSOAL" → AnaliseView com filtro pré-aplicado)</td>
+          <td>3h</td>
+          <td>Conecta IA ao dado, cria fluxo Insight → Drill-down</td>
+        </tr>
+        <tr>
+          <td><span class="priority-low">P3 · Melhoria</span></td>
+          <td><code>components/TicketMedioPanel.jsx</code> (novo)</td>
+          <td>Criar painel de ticket médio por tipo de exame e por convênio na view Receita. Requer campo <code>ticket_medio_por_exame</code> no pipeline</td>
+          <td>1 dia</td>
+          <td>Visibilidade de pricing por modalidade — informação essencial para renegociação de contratos</td>
+        </tr>
+        <tr>
+          <td><span class="priority-low">P3 · Melhoria</span></td>
+          <td><code>App.jsx:Header</code></td>
+          <td>Adicionar breadcrumb como <code>&lt;span&gt;Início › {view}&lt;/span&gt;</code> abaixo do h1 nas sub-views</td>
+          <td>20 min</td>
+          <td>Orienta usuário sobre posição atual no fluxo de análise</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="footer">
+    FP&A Dashboard UX Validation · XPTO Campinas · Gerado em 22/04/2026 · Score final: 4.7/10 — "Dashboard Analítico"
+  </div>
+
+</div>
+</body>
+</html>

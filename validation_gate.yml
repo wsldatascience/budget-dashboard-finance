@@ -1,0 +1,75 @@
+name: fpna-validation-gate
+version: 1.1
+
+inputs:
+  - dre_table
+  - expense_base
+  - consolidated_output
+
+rules:
+
+  reconciliation_check:
+    description: "Base deve bater com DRE"
+    severity: BLOCKER
+    condition: |
+      abs(sum(expense_base.realizado) - sum(dre_table.realizado)) <= 1.0
+
+  orphan_accounts:
+    description: "Contas sem mapeamento no DRE"
+    severity: BLOCKER
+    condition: |
+      count(expense_base.conta NOT IN dre_table.conta
+            AND NOT expense_base.conta STARTS_WITH out_of_scope_prefixes
+            AND NOT expense_base.conta IN known_unbudgeted_accounts) == 0
+    out_of_scope_prefixes:
+      "12":     "Ativo Imobilizado — CapEx, não despesa P&L"
+      "23":     "Distribuição de Lucros — resultado abaixo da linha"
+      "390203": "Financiamento para Aquisição de Bens — passivo financeiro"
+      "31":     "Receita e Deduções — tratado por fct_receita_vs_orcado"
+    known_unbudgeted_accounts:
+      "307006": "MANUTENÇÃO EDIFÍCIOS — P&L real, orçado=0, rastreado como unplanned"
+    note: >
+      Prefixos mantidos em sincronia com OUT_OF_SCOPE_PREFIXES em src/config.py.
+      Contas P&L sem linha orçamentária ficam em KNOWN_UNBUDGETED_ACCOUNTS (config.py)
+      — injetas no DRE staging com orcado=0 e rastreadas como WARNING.
+
+  aggregation_integrity:
+    description: "Consistência por grupo"
+    severity: BLOCKER
+    condition: |
+      sum_by_group(expense_base) == sum_by_group(dre_table)
+
+  output_schema_check:
+    description: "CSV com colunas obrigatórias"
+    severity: BLOCKER
+    required_columns:
+      - mes_ano
+      - centro_custo
+      - categoria
+      - orcado
+      - realizado
+      - variacao_rs
+      - variacao_pct
+
+  unplanned_spending:
+    description: "Gastos realizados sem orçamento (orcado=0 mas realizado>0)"
+    severity: WARNING
+    condition: |
+      count(dre_table.orcado == 0 AND dre_table.realizado > 0) == 0
+    note: >
+      Não bloqueia o pipeline. Reportado em quality_report.json como WARNING
+      para visibilidade do CFO. Contas conhecidas devem ser movidas para
+      KNOWN_UNBUDGETED_ACCOUNTS e rastreadas no próximo ciclo orçamentário.
+
+  data_quality_threshold:
+    description: "Score mínimo de qualidade (PASS=1.0, WARNING=0.8, FAIL=0.0)"
+    severity: WARNING
+    condition: |
+      quality_score >= 9.0
+
+output:
+  status: PASS | FAIL
+  score: float
+  issues: list
+  reconciliation_diff_table: true
+  orphan_accounts_table: true
