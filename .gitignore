@@ -2,6 +2,9 @@
 .env
 *.env
 
+# Scripts with real company data — local only
+scripts/anonymize_excel.py
+
 # Financial data outputs — sensitive
 output/
 dashboard/public/dashboard_data.json
