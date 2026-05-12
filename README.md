@@ -10,6 +10,18 @@
 
 ---
 
+## Screenshots
+
+| Resumo Executivo | Margens & EBITDA Pro-forma |
+|:---:|:---:|
+| ![Resumo](docs/screenshots/dashboard-resumo.png) | ![Margens](docs/screenshots/dashboard-margens.png) |
+
+| Concentração de Clientes |
+|:---:|
+| ![Concentração](docs/screenshots/dashboard-concentracao.png) |
+
+---
+
 ## Sobre o projeto
 
 Este projeto foi desenvolvido como resposta a um desafio técnico de **FP&A (Financial Planning & Analysis)**, que exigia:
