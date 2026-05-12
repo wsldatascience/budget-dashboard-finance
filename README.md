@@ -152,8 +152,8 @@ financial_analysis/
 
 ```bash
 # 1. Clone o repositório
-git clone https://github.com/seu-usuario/financial-analysis.git
-cd financial-analysis
+git clone https://github.com/wsldatascience/budget-dashboard-finance.git
+cd budget-dashboard-finance
 
 # 2. Crie e ative o ambiente virtual
 python -m venv venv
